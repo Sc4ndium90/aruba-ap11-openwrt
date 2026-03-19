@@ -50,8 +50,6 @@ The memory must be rewritten to get full access.
 
 To access apboot, the boot process must be intercepted by pressing "Enter" when "Hit <Enter> to stop autoboot:" is shown.
 ```
-apboot> dhcp
-
 apboot> setenv serverip XXX.XXX.XXX.XXX # Alpine Linux IP
 apboot> setenv ipaddr XXX.XXX.XXX.XXX   # AP IP (if not set with DHCP)
 apboot> saveenv                         # Save envs
@@ -68,3 +66,30 @@ apboot> sf write 0x84000000 0x0000000f0000 0xf0000
 # Restart the device
 apboot> reset
 ```
+
+### Install OpenWRT
+apboot must be fetched again to start OpenWRT on RAM (To access apboot, the boot process must be intercepted by pressing "Enter" when "Hit <Enter> to stop autoboot:" is shown)
+
+```bash
+apboot> setenv bootargs_openwrt "setenv bootargs console=ttyMSM1,9600n8"
+apboot> setenv nandboot_openwrt "run bootargs_openwrt; ubi part aos1; ubi read 0x85000000 kernel; set fdt_high 0x87000000; bootm 0x85000000"
+# Substitute the following IP-addresses
+apboot> setenv ramboot_openwrt "run bootargs_openwrt; setenv ipaddr [XXX.XXX.XXX.XXX]; setenv serverip [XXX.XXX.XXX.XXX]; netget; set fdt_high 0x87000000; bootm" 
+apboot> setenv bootcmd "run nandboot_openwrt"
+apboot> saveenv
+
+apboot> run ramboot_openwrt
+```
+(Note that after the TFTP transfer completes, there will be an error displayed: “Invalid image format version”. It can be ignored.) 
+
+Once in OpenWRT running in the RAM, the sysupgrade image must be downloaded and installed.
+```bash
+cd /tmp
+wget -O openwrt-sysupgrade.bin https://downloads.openwrt.org/releases/24.10.4/targets/ipq40xx/generic/openwrt-24.10.4-ipq40xx-generic-aruba_ap-303-squashfs-sysupgrade.bin
+
+ubidetach -p /dev/mtd1
+ubiformat /dev/mtd1
+sysupgrade -n /tmp/openwrt-sysupgrade.bin
+```
+
+The access point is now running OpenWRT.
