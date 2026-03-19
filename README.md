@@ -93,3 +93,8 @@ sysupgrade -n /tmp/openwrt-sysupgrade.bin
 ```
 
 The access point is now running OpenWRT.
+
+# Sources
+https://openwrt.org/toh/aruba/ap-303
+https://forum.openwrt.org/t/apboot-dump-for-aruba-iap11-ap303-or-compatible-u-boot/177595/4
+https://forum.openwrt.org/t/aruba-iap-11-apboot-downgrade-invalid-instant-small-business-image/120921/16
